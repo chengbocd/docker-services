@@ -1,0 +1,196 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: 'root'
+      MONGO_INITDB_ROOT_PASSWORD: "123456"
+      TZ: $TZ
+    #      wiredTigerCacheSizeGB: 2
+    volumes:
+      - ${DATA_DIR}/mongo:/data/db:rw
+      - ${DATA_DIR}/mongo_key:/mongo:rw
+    ports:
+      - "27017:27017"
+    restart: always
+    networks:
+      - default
+    command:
+      --auth
+
+  postgresql16:
+    image: postgres:16 # 指定版本
+    container_name: postgresql
+    privileged: true #解决权限问题
+    ports:
+      - "5432:5432"
+    volumes:
+      - ${DATA_DIR}/pgsql:/var/lib/postgresql/data:rw
+    environment:
+      POSTGRES_USER: root # 从环境变量读取
+      POSTGRES_PASSWORD: root # 从环境变量读取
+      POSTGRES_DB: test # 指定数据库名称
+      TZ: ${TZ}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  mysql8:
+    image: arm64v8/mysql:8
+    container_name: mysql8
+    ports:
+      - "13306:3306"
+    volumes:
+      - ${DATA_DIR}/mysql8:/var/lib/mysql/:rw
+    restart: always
+    networks:
+      - default
+    environment:
+      MYSQL_ROOT_PASSWORD: 'root'
+      MYSQL_ROOT_HOST: '%'
+      TZ: $TZ
+
+  myRedis:
+    image: redis:latest
+    container_name: myredis
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+    ports:
+      - '6379:6379'
+    volumes:
+      - ${DATA_DIR}/redis/conf:/usr/local/etc/redis:rw
+      - ${DATA_DIR}/redis:/data/:rw
+    command:
+      redis-server --port 6379 --requirepass "123456" --appendonly yes
+    networks:
+      - default
+
+  etcd:
+    image: bitnami/etcd:latest
+    container_name: etcd
+    ports:
+      - "${ETCD_HOST_PORT_ONE}:2379"
+      - "${ETCD_HOST_PORT_TWO}:2380"
+    volumes:
+      - ${DATA_DIR}/etcd:/bitnami/etcd/data/:rw
+    restart: always
+    environment:
+      ALLOW_NONE_AUTHENTICATION: yes
+      TZ: ${TZ}
+    networks:
+      - default
+
+  zookeeper:
+    image: zookeeper:latest
+    ports:
+      - "12181:2181"
+    container_name: zookeeper
+    environment:
+      TZ: "$TZ"
+      # 匿名登录--必须开启
+      ALLOW_ANONYMOUS_LOGIN: yes
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - ${DATA_DIR}/zookeeper:/data/:rw
+    restart: always
+    networks:
+      - default
+
+  kafka:
+    image: wurstmeister/kafka
+    container_name: kafka
+    restart: always
+    ports:
+      - '19092:9092'
+      - '9093:9093'#本机用这个端口访问 9093
+    environment:
+      - TZ=$TZ
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
+      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka:9092,EXTERNAL://localhost:9093
+      - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
+    volumes:
+      - ${DATA_DIR}/kafka:/data/:rw
+    networks:
+      - default
+    depends_on:
+      - zookeeper
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    container_name: elasticsearch
+    environment:
+      - TZ=$TZ
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false # 禁用安全功能
+      - cluster.initial_master_nodes=elasticsearch # 单节点集群
+      - ES_PATH_LOG=/usr/share/elasticsearch/logs # 指定日志路径
+      - ES_PATH_LOG=/usr/share/elasticsearch/logs # 添加此行
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ${DATA_DIR}/esData:/usr/share/elasticsearch/data:rw
+      - ${DATA_DIR}/esLog:/usr/share/elasticsearch/logs:rw # 新增日志目录映射
+    ports:
+      - '9200:9200'
+    networks:
+      - default
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=30s" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: on-failure # 当容器异常退出时重启
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.15.0
+    container_name: logstash
+    ports:
+      - '5044:5044'
+      - '9600:9600' # 添加 Logstash API 端口映射
+    depends_on:
+      - elasticsearch
+    healthcheck:
+      test: ["CMD-SHELL", "curl --silent --fail http://elasticsearch:9200 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - default
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.15.0
+    container_name: kibana
+    ports:
+      - '5601:5601'
+    depends_on:
+      - elasticsearch
+    networks:
+      - default
+    environment:
+      TZ: "Asia/Shanghai"
+      elasticsearch.hosts: http://elasticsearch:9200
+      I18N_LOCALE: "zh-CN"
+      server.timeout: 300s  # 尝试增加到 300 秒
+      xpack.alerting.maxInstallTime: 1800000ms  # 尝试增加到 1800000 毫秒
+
+
+networks:
+  default:
+    driver: bridge
+    ipam:
+      driver: default
+      # 解除下面的注释可以设置网段，用于nginx等容器固定容器IP
+      #config:
+      #  - subnet: 10.0.0.0/24

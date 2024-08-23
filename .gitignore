@@ -23,3 +23,5 @@ go.work.sum
 
 # env file
 .env
+# 忽略data下的文件
+data/
