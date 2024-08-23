@@ -39,7 +39,7 @@ services:
     restart: always
 
   mysql8:
-    image: arm64v8/mysql:8
+    image: mysql:8
     container_name: mysql8
     ports:
       - "13306:3306"
@@ -73,8 +73,8 @@ services:
     image: bitnami/etcd:latest
     container_name: etcd
     ports:
-      - "${ETCD_HOST_PORT_ONE}:2379"
-      - "${ETCD_HOST_PORT_TWO}:2380"
+      - "2379:2379"
+      - "2380:2380"
     volumes:
       - ${DATA_DIR}/etcd:/bitnami/etcd/data/:rw
     restart: always
