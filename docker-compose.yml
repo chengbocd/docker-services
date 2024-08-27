@@ -37,6 +37,8 @@ services:
       timeout: 5s
       retries: 5
     restart: always
+    networks:
+      - default
 
   mysql8:
     image: mysql:8
@@ -84,44 +86,34 @@ services:
     networks:
       - default
 
-  zookeeper:
-    image: zookeeper:latest
-    ports:
-      - "12181:2181"
-    container_name: zookeeper
-    environment:
-      TZ: "$TZ"
-      # 匿名登录--必须开启
-      ALLOW_ANONYMOUS_LOGIN: yes
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    volumes:
-      - ${DATA_DIR}/zookeeper:/data/:rw
-    restart: always
-    networks:
-      - default
-
   kafka:
-    image: wurstmeister/kafka
+    image: docker.chenby.cn/bitnami/kafka:3.5.2
+    hostname: kafka
     container_name: kafka
-    restart: always
     ports:
-      - '19092:9092'
-      - '9093:9093'#本机用这个端口访问 9093
+      - "9092:9092"
     environment:
-      - TZ=$TZ
-      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
-      - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
-      - KAFKA_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
-      - KAFKA_ADVERTISED_LISTENERS=CLIENT://kafka:9092,EXTERNAL://localhost:9093
-      - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
+      TZ: ${TZ}
+      # KRaft settings
+      KAFKA_CFG_NODE_ID: 1
+      KAFKA_CFG_PROCESS_ROLES: controller,broker
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093 # 单节点 KRaft 模式配置
+      KAFKA_KRAFT_CLUSTER_ID: abcdefghijklmnopqrstuv
+      # Listeners
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://127.0.0.1:9092 #外网访问地址
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      # Clustering
+      KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR: 1
     volumes:
-      - ${DATA_DIR}/kafka:/data/:rw
+      - ${DATA_DIR}/kafka:/bitnami/kafka:rw
+    restart: always
     networks:
       - default
-    depends_on:
-      - zookeeper
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
@@ -134,7 +126,6 @@ services:
       - xpack.security.enabled=false # 禁用安全功能
       - cluster.initial_master_nodes=elasticsearch # 单节点集群
       - ES_PATH_LOG=/usr/share/elasticsearch/logs # 指定日志路径
-      - ES_PATH_LOG=/usr/share/elasticsearch/logs # 添加此行
     ulimits:
       memlock:
         soft: -1
@@ -166,6 +157,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: always
     networks:
       - default
 
@@ -178,12 +170,15 @@ services:
       - elasticsearch
     networks:
       - default
+    restart: always
     environment:
       TZ: "Asia/Shanghai"
-      elasticsearch.hosts: http://elasticsearch:9200
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
       I18N_LOCALE: "zh-CN"
-      server.timeout: 300s  # 尝试增加到 300 秒
-      xpack.alerting.maxInstallTime: 1800000ms  # 尝试增加到 1800000 毫秒
+      SERVER_TIMEOUT: 300s  # 尝试增加到 300 秒
+      XPACK_ALERTING_MAX_INSTALL_TIME: 1800000ms  # 尝试增加到 1800000 毫秒
+      # 确保 Elasticsearch 已准备好接受请求
+      ELASTICSEARCH_WAIT_FOR: yellow
 
 
 networks:
