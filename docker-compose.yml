@@ -138,7 +138,7 @@ services:
     networks:
       - default
     healthcheck:
-      test: [ "CMD", "curl", "--fail", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=30s" ]
+      test: [ "CMD", "curl", "--fail", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=10s" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -172,11 +172,11 @@ services:
       - default
     restart: always
     environment:
-      TZ: "Asia/Shanghai"
+      TZ: ${TZ}
       ELASTICSEARCH_HOSTS: http://elasticsearch:9200
       I18N_LOCALE: "zh-CN"
-      SERVER_TIMEOUT: 300s  # 尝试增加到 300 秒
-      XPACK_ALERTING_MAX_INSTALL_TIME: 1800000ms  # 尝试增加到 1800000 毫秒
+      SERVER_TIMEOUT: 600s  # 尝试增加到 300 秒
+      XPACK_ALERTING_MAX_INSTALL_TIME: 2400000ms  # 尝试增加到 1800000 毫秒
       # 确保 Elasticsearch 已准备好接受请求
       ELASTICSEARCH_WAIT_FOR: yellow
 
