@@ -1,6 +1,6 @@
 services:
   mongodb:
-    image: mongo:latest
+    image: registry.cn-hangzhou.aliyuncs.com/our_image/mongo:latest
     container_name: mongodb
     environment:
       MONGO_INITDB_ROOT_USERNAME: 'root'
@@ -19,7 +19,7 @@ services:
       --auth
 
   postgresql16:
-    image: postgres:16 # 指定版本
+    image: registry.cn-hangzhou.aliyuncs.com/our_image/postgres:16
     container_name: postgresql
     privileged: true #解决权限问题
     ports:
@@ -41,7 +41,7 @@ services:
       - default
 
   mysql8:
-    image: bitnami/mysql:8.0.39
+    image: registry.cn-hangzhou.aliyuncs.com/our_image/mysql:8.0.39
     container_name: mysql8
     ports:
       - "13306:3306"
@@ -56,7 +56,7 @@ services:
       TZ: $TZ
 
   myRedis:
-    image: redis:7.4-alpine
+    image: registry.cn-hangzhou.aliyuncs.com/our_image/redis:7.4-alpine
     container_name: myredis
     restart: unless-stopped
     environment:
@@ -72,7 +72,7 @@ services:
       - default
 
   etcd:
-    image: bitnami/etcd:latest
+    image: registry.cn-hangzhou.aliyuncs.com/our_image/etcd:latest
     container_name: etcd
     ports:
       - "2379:2379"
@@ -87,7 +87,7 @@ services:
       - default
 
   kafka:
-    image: bitnami/kafka:3.5.2
+    image: registry.cn-hangzhou.aliyuncs.com/our_image/kafka:3.5.2
     hostname: kafka
     container_name: kafka
     ports:
@@ -116,7 +116,7 @@ services:
       - default
 
   elasticsearch:
-    image: bitnami/elasticsearch:8.15.0
+    image: registry.cn-hangzhou.aliyuncs.com/our_image/elasticsearch:8.15.0
     container_name: elasticsearch
     environment:
       - TZ=$TZ
@@ -145,7 +145,7 @@ services:
     restart: on-failure # 当容器异常退出时重启
 
   logstash:
-    image: bitnami/logstash:8.15.0
+    image: registry.cn-hangzhou.aliyuncs.com/our_image/logstash:8.15.0
     container_name: logstash
     ports:
       - '5044:5044'
@@ -162,7 +162,7 @@ services:
       - default
 
   kibana:
-    image: bitnami/kibana:8.15.0
+    image: registry.cn-hangzhou.aliyuncs.com/our_image/kibana:8.15.0
     container_name: kibana
     ports:
       - '5601:5601'

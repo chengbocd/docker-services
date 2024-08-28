@@ -26,3 +26,34 @@ Docker镜像加速站	https://docker.ckyl.me
 Docker Proxy 镜像加速（来源地址）	https://dockerpull.com
 AtomHub 可信镜像仓库平台 （只包含基础镜像，共336个）	https://atomhub.openatom.cn
 DaoCloud 镜像站	https://docker.m.daocloud.io
+
+## 镜像上传到阿里云镜像
+https://zhuanlan.zhihu.com/p/669796818
+
+docker tag abe5b73b628f registry.cn-hangzhou.aliyuncs.com/our_image/mysql:8.0.39
+docker push registry.cn-hangzhou.aliyuncs.com/our_image/mysql:8.0.39
+
+docker tag f54100876780 registry.cn-hangzhou.aliyuncs.com/our_image/kafka:3.5.2
+docker push registry.cn-hangzhou.aliyuncs.com/our_image/kafka:3.5.2
+
+docker tag b68c7793ea72 registry.cn-hangzhou.aliyuncs.com/our_image/kibana:8.15.0
+docker push registry.cn-hangzhou.aliyuncs.com/our_image/kibana:8.15.0
+
+docker tag 7f156f60be2a registry.cn-hangzhou.aliyuncs.com/our_image/elasticsearch:8.15.0
+docker push registry.cn-hangzhou.aliyuncs.com/our_image/elasticsearch:8.15.0
+
+docker tag da3096552709 registry.cn-hangzhou.aliyuncs.com/our_image/logstash:8.15.0
+docker push registry.cn-hangzhou.aliyuncs.com/our_image/logstash:8.15.0
+
+docker tag 35042a754d27 registry.cn-hangzhou.aliyuncs.com/our_image/postgres:16
+docker push registry.cn-hangzhou.aliyuncs.com/our_image/postgres:16
+
+docker tag 25c710c0f9d3 registry.cn-hangzhou.aliyuncs.com/our_image/etcd:latest
+docker push registry.cn-hangzhou.aliyuncs.com/our_image/etcd:latest
+
+docker tag 7ec24066439f registry.cn-hangzhou.aliyuncs.com/our_image/redis:7.4-alpine
+docker push registry.cn-hangzhou.aliyuncs.com/our_image/redis:7.4-alpine
+
+
+docker tag eb433c5673fb registry.cn-hangzhou.aliyuncs.com/our_image/mongo:latest
+docker push registry.cn-hangzhou.aliyuncs.com/our_image/mongo:latest
