@@ -41,7 +41,7 @@ services:
       - default
 
   mysql8:
-    image: mysql:8
+    image: bitnami/mysql:8.0.39
     container_name: mysql8
     ports:
       - "13306:3306"
@@ -56,7 +56,7 @@ services:
       TZ: $TZ
 
   myRedis:
-    image: redis:latest
+    image: redis:7.4-alpine
     container_name: myredis
     restart: unless-stopped
     environment:
@@ -116,7 +116,7 @@ services:
       - default
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    image: bitnami/elasticsearch:8.15.0
     container_name: elasticsearch
     environment:
       - TZ=$TZ
@@ -145,7 +145,7 @@ services:
     restart: on-failure # 当容器异常退出时重启
 
   logstash:
-    image: docker.elastic.co/logstash/logstash:8.15.0
+    image: bitnami/logstash:8.15.0
     container_name: logstash
     ports:
       - '5044:5044'
@@ -162,7 +162,7 @@ services:
       - default
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:8.15.0
+    image: bitnami/kibana:8.15.0
     container_name: kibana
     ports:
       - '5601:5601'
@@ -175,10 +175,15 @@ services:
       TZ: ${TZ}
       ELASTICSEARCH_HOSTS: http://elasticsearch:9200
       I18N_LOCALE: "zh-CN"
-      SERVER_TIMEOUT: 600s  # 尝试增加到 300 秒
-      XPACK_ALERTING_MAX_INSTALL_TIME: 2400000ms  # 尝试增加到 1800000 毫秒
+      SERVER_TIMEOUT: 900s  # 尝试增加到 300 秒
+      XPACK_ALERTING_MAX_INSTALL_TIME: 3000000ms  # 尝试增加到 1800000 毫秒
       # 确保 Elasticsearch 已准备好接受请求
       ELASTICSEARCH_WAIT_FOR: yellow
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "http://localhost:5601/api/status" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 
 networks:
