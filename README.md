@@ -29,6 +29,7 @@ DaoCloud 镜像站	https://docker.m.daocloud.io
 
 ## 镜像上传到阿里云镜像
 https://zhuanlan.zhihu.com/p/669796818
+目前our_image全部是 arm64
 
 docker tag abe5b73b628f registry.cn-hangzhou.aliyuncs.com/our_image/mysql:8.0.39
 docker push registry.cn-hangzhou.aliyuncs.com/our_image/mysql:8.0.39
