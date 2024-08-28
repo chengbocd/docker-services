@@ -1,6 +1,6 @@
 services:
   mongodb:
-    image: mongo:latest
+    image: mongo:7.0.14
     container_name: mongodb
     environment:
       MONGO_INITDB_ROOT_USERNAME: 'root'
@@ -19,7 +19,7 @@ services:
       --auth
 
   postgresql16:
-    image: postgres:16 # 指定版本
+    image: bitnami/postgresql:16.4.0    # 指定版本
     container_name: postgresql
     privileged: true #解决权限问题
     ports:
