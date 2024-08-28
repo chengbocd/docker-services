@@ -88,6 +88,7 @@ services:
 
   kafka:
     image: docker.chenby.cn/bitnami/kafka:3.5.2
+    image: bitnami/kafka:3.5.2
     hostname: kafka
     container_name: kafka
     ports:
