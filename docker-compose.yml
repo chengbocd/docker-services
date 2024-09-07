@@ -83,6 +83,7 @@ services:
     environment:
       ALLOW_NONE_AUTHENTICATION: yes
       TZ: ${TZ}
+    user: root  # 使用root用户运行容器  
     networks:
       - default
 
