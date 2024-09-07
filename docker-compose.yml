@@ -112,6 +112,7 @@ services:
     volumes:
       - ${DATA_DIR}/kafka:/bitnami/kafka:rw
     restart: always
+    user: root # 确保容器内部使用root用户运行，便于权限处理
     networks:
       - default
 
