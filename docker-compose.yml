@@ -120,11 +120,15 @@ services:
   elasticsearch:
     image: bitnami/elasticsearch:8.15.0
     container_name: elasticsearch
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     environment:
       - TZ=$TZ
       - cluster.name=docker-cluster
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"  # 减小JVM堆大小
       - xpack.security.enabled=false # 禁用安全功能
       - cluster.initial_master_nodes=elasticsearch # 单节点集群
       - ES_PATH_LOG=/usr/share/elasticsearch/logs # 指定日志路径
@@ -149,11 +153,17 @@ services:
   logstash:
     image: bitnami/logstash:8.15.0
     container_name: logstash
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     ports:
       - '5044:5044'
       - '9600:9600' # 添加 Logstash API 端口映射
     depends_on:
       - elasticsearch
+    environment:
+    - LS_JAVA_OPTS=-Xms256m -Xmx256m  # 减小JVM堆大小  
     healthcheck:
       test: ["CMD-SHELL", "curl --silent --fail http://elasticsearch:9200 || exit 1"]
       interval: 10s
@@ -166,6 +176,10 @@ services:
   kibana:
     image: bitnami/kibana:8.15.0
     container_name: kibana
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     ports:
       - '5601:5601'
     depends_on:
@@ -177,7 +191,7 @@ services:
       TZ: ${TZ}
       ELASTICSEARCH_HOSTS: http://elasticsearch:9200
       I18N_LOCALE: "zh-CN"
-      SERVER_TIMEOUT: 900s  # 尝试增加到 300 秒
+      SERVER_TIMEOUT: 60s  # 尝试增加到 60 秒
       XPACK_ALERTING_MAX_INSTALL_TIME: 3000000ms  # 尝试增加到 1800000 毫秒
       # 确保 Elasticsearch 已准备好接受请求
       ELASTICSEARCH_WAIT_FOR: yellow
