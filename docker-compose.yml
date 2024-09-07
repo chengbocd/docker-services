@@ -72,7 +72,7 @@ services:
       - default
 
   etcd:
-    image: bitnami/etcd:latest
+    image: bitnami/etcd:3.5.15
     container_name: etcd
     ports:
       - "2379:2379"
@@ -128,7 +128,7 @@ services:
       - TZ=$TZ
       - cluster.name=docker-cluster
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"  # 减小JVM堆大小
+      - "ES_JAVA_OPTS=-Xlog:disable -Xlog:gc=debug:stderr -Xms512m -Xmx512m"
       - xpack.security.enabled=false # 禁用安全功能
       - cluster.initial_master_nodes=elasticsearch # 单节点集群
       - ES_PATH_LOG=/usr/share/elasticsearch/logs # 指定日志路径
