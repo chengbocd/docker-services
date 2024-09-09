@@ -72,7 +72,7 @@ services:
       - default
 
   etcd:
-    image: bitnami/etcd:3.5.15
+    image: bitnami/etcd:latest
     container_name: etcd
     ports:
       - "2379:2379"
@@ -81,7 +81,14 @@ services:
       - ${DATA_DIR}/etcd:/bitnami/etcd/data/:rw
     restart: always
     environment:
-      ALLOW_NONE_AUTHENTICATION: yes
+      ETCD_ADVERTISE_CLIENT_URLS: http://0.0.0.0:2379
+      ETCD_LISTEN_CLIENT_URLS: http://0.0.0.0:2379
+      ETCD_LISTEN_PEER_URLS: http://0.0.0.0:2380
+      ETCD_INITIAL_ADVERTISE_PEER_URLS: http://0.0.0.0:2380
+      ALLOW_NONE_AUTHENTICATION: yes #参数指不用密码可以连接
+      ETCD_INITIAL_CLUSTER: node1=http://0.0.0.0:2380
+      ETCD_NAME: node1
+      ETCD_DATA_DIR: /bitnami/etcd/data
       TZ: ${TZ}
     user: root  # 使用root用户运行容器  
     networks:
@@ -123,7 +130,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 800M
     environment:
       - TZ=$TZ
       - cluster.name=docker-cluster
@@ -156,7 +163,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 800M
     ports:
       - '5044:5044'
       - '9600:9600' # 添加 Logstash API 端口映射
